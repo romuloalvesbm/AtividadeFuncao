@@ -16,7 +16,6 @@
 *.mp4
 *.mov
 *.rar
-*.mdf
 *.ldf
 **/nuspec.list
 **/packages/

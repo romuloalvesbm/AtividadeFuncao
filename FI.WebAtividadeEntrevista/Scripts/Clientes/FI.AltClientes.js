@@ -1,6 +1,8 @@
 ﻿
+var dadosBeneficiarios = [];
 $(document).ready(function () {
     $('#Cpf').mask('000.000.000-00', { reverse: false });
+    $('#BeneficiarioCpf').mask('000.000.000-00', { reverse: true });
     if (obj) {
         $('#formCadastro #Nome').val(obj.Nome);
         $('#formCadastro #CEP').val(obj.CEP);
@@ -12,7 +14,41 @@ $(document).ready(function () {
         $('#formCadastro #Logradouro').val(obj.Logradouro);
         $('#formCadastro #Telefone').val(obj.Telefone);
         $('#formCadastro #Cpf').val(obj.Cpf);
+
+        dadosBeneficiarios = JSON.parse(JSON.stringify(obj.Beneficiarios));
+
+        $('#gridBeneficiarios').jtable({
+            actions: {
+                listAction: function (postData, jtParams) {
+                    return {
+                        Result: "OK",
+                        Records: dadosBeneficiarios,
+                        TotalRecordCount: dadosBeneficiarios.length
+                    };
+                }
+            },
+            fields: {
+                id: {
+                    key: true,
+                    list: false
+                },
+                Cpf: {
+                    title: 'Cpf',
+                    width: '20%',
+                    display: function (data) {
+                        return formatarCPF(data.record.Cpf);
+                    }
+                },
+                Nome: {
+                    title: 'Nome',
+                    width: '40%'
+                }
+            }
+        });
+
     }
+
+    $('#gridBeneficiarios').jtable('load');
 
     $('#formCadastro').submit(function (e) {
         e.preventDefault();
@@ -30,7 +66,8 @@ $(document).ready(function () {
                 "Cidade": $(this).find("#Cidade").val(),
                 "Logradouro": $(this).find("#Logradouro").val(),
                 "Telefone": $(this).find("#Telefone").val(),
-                "Cpf": $(this).find("#Cpf").val()
+                "Cpf": $(this).find("#Cpf").val(),
+                "Beneficiarios": dadosBeneficiarios
             },
             error:
                 function (r) {
@@ -77,6 +114,55 @@ function ModalDialog(titulo, texto, close) {
     $('#' + random).modal('show');
 }
 
+$('#btnAddBeneficiario').click(function () {
+
+
+    var nome = $('#BeneficiarioNome').val();
+    var cpf = $('#BeneficiarioCpf').val().replace(/[.\-]/g, '');
+
+    if (nome.trim() == '' || cpf.trim() === '') {
+        ModalDialog("Alerta", "Favor preencher todos os campos.", false);
+        return;
+    }
+
+    if (!TestaCPF(cpf)) {
+        ModalDialog("Alerta", "CPF inválido.", false);
+        return;
+    }
+
+    var cpfExistente = dadosBeneficiarios.some(function (beneficiario) {
+        return beneficiario.Cpf === cpf;
+    });
+
+    if (cpfExistente) {
+        ModalDialog("Alerta", "CPF do beneficiário já cadastrado.", false);
+    }
+    else {
+        // Adicionar o novo beneficiário aos dados locais
+        dadosBeneficiarios.push({
+            Nome: nome,
+            Cpf: cpf
+        });
+
+        // Adicionar o novo cliente à tabela
+        $('#gridBeneficiarios').jtable('addRecord', {
+            record: {
+                Nome: nome,
+                Cpf: $('#BeneficiarioCpf').val()
+            },
+            clientOnly: true,
+            success: function () {
+                // Limpar os campos após a adição bem-sucedida
+                $('#BeneficiarioNome').val('');
+                $('#BeneficiarioCpf').val('');
+            },
+            error: function () {
+                alert('Erro ao adicionar Beneficiario.');
+            }
+        });
+    }
+});
+
 function CloseModalDialog(close) {
     if (close) {
         $("#formCadastro")[0].reset();
@@ -87,4 +173,10 @@ function CloseModalDialog(close) {
             $(this).remove(); // Remove o modal do DOM após ele ser fechado
         });
     }
+}
+
+// Função para formatar CPF
+function formatarCPF(cpf) {
+    cpf = cpf.replace(/[^\d]/g, ''); // Remove caracteres não numéricos
+    return cpf.replace(/(\d{3})(\d{3})(\d{3})(\d{2})/, "$1.$2.$3-$4");
 }

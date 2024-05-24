@@ -1,4 +1,4 @@
-﻿
+﻿var dadosBeneficiarios = [];
 $(document).ready(function () {
     $('#Cpf').mask('000.000.000-00', { reverse: true });
     $('#BeneficiarioCpf').mask('000.000.000-00', { reverse: true });
@@ -18,7 +18,7 @@ $(document).ready(function () {
                 "Logradouro": $(this).find("#Logradouro").val(),
                 "Telefone": $(this).find("#Telefone").val(),
                 "Cpf": $(this).find("#Cpf").val(),
-                "Beneficiarios": obterBeneficiarios(),
+                "Beneficiarios": dadosBeneficiarios
             },
             error:
                 function (r) {
@@ -97,8 +97,6 @@ $('#gridBeneficiarios').jtable({
     }
 });
 
-var dadosBeneficiarios = [];
-
 $('#btnAddBeneficiario').click(function () {
 
 
@@ -147,10 +145,6 @@ $('#btnAddBeneficiario').click(function () {
     }
 });
 
-function obterBeneficiarios() {
-    return dadosBeneficiarios;
-}
-
 function excluirLinha(button) {
     var row = button.parentNode.parentNode;
     var cpf = row.cells[0].textContent.trim();
@@ -170,53 +164,3 @@ function excluirLinha(button) {
         }
     });
 };
-
-function TestaCPF(cpf) {
-    var Soma = 0
-    var Resto
-
-    var strCPF = String(cpf).replace(/[^\d]/g, '')
-
-    if (strCPF.length !== 11)
-        return false
-
-    if ([
-        '00000000000',
-        '11111111111',
-        '22222222222',
-        '33333333333',
-        '44444444444',
-        '55555555555',
-        '66666666666',
-        '77777777777',
-        '88888888888',
-        '99999999999',
-    ].indexOf(strCPF) !== -1)
-        return false
-
-    for (i = 1; i <= 9; i++)
-        Soma = Soma + parseInt(strCPF.substring(i - 1, i)) * (11 - i);
-
-    Resto = (Soma * 10) % 11
-
-    if ((Resto == 10) || (Resto == 11))
-        Resto = 0
-
-    if (Resto != parseInt(strCPF.substring(9, 10)))
-        return false
-
-    Soma = 0
-
-    for (i = 1; i <= 10; i++)
-        Soma = Soma + parseInt(strCPF.substring(i - 1, i)) * (12 - i)
-
-    Resto = (Soma * 10) % 11
-
-    if ((Resto == 10) || (Resto == 11))
-        Resto = 0
-
-    if (Resto != parseInt(strCPF.substring(10, 11)))
-        return false
-
-    return true
-}

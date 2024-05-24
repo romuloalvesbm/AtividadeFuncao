@@ -63,7 +63,6 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="BLL\BoCliente.cs" />
-    <Compile Include="DAL\Clientes\DaoBeneficiario.cs" />
     <Compile Include="DAL\Clientes\DaoCliente.cs" />
     <Compile Include="DAL\Padrao\FI.AcessoDados.cs" />
     <Compile Include="DML\Beneficiarios.cs" />

@@ -33,23 +33,26 @@ namespace FI.AtividadeEntrevista.DAL
             parametros.Add(new System.Data.SqlClient.SqlParameter("Email", cliente.Email));
             parametros.Add(new System.Data.SqlClient.SqlParameter("Telefone", cliente.Telefone));
             parametros.Add(new System.Data.SqlClient.SqlParameter("Cpf", cliente.Cpf));
-           
-            // Criar a tabela de beneficiários
-            DataTable beneficiariosTable = new DataTable();
-            beneficiariosTable.Columns.Add("Nome", typeof(string));
-            beneficiariosTable.Columns.Add("CPF", typeof(string));
 
-            // Preencher a tabela de beneficiários com os dados dos beneficiários do cliente
-            foreach (var beneficiario in cliente.Beneficiarios)
+            if (cliente.Beneficiarios != null)
             {
-                beneficiariosTable.Rows.Add(beneficiario.Nome, beneficiario.Cpf);
-            }
+                // Criar a tabela de beneficiários
+                DataTable beneficiariosTable = new DataTable();
+                beneficiariosTable.Columns.Add("Nome", typeof(string));
+                beneficiariosTable.Columns.Add("CPF", typeof(string));
 
-            // Adicionar o parâmetro para os beneficiários
-            SqlParameter beneficiariosParam = new SqlParameter("@BENEFICIARIOS", beneficiariosTable);
-            beneficiariosParam.SqlDbType = SqlDbType.Structured;
-            beneficiariosParam.TypeName = "BeneficiariosType";
-            parametros.Add(beneficiariosParam);
+                // Preencher a tabela de beneficiários com os dados dos beneficiários do cliente
+                foreach (var beneficiario in cliente.Beneficiarios)
+                {
+                    beneficiariosTable.Rows.Add(beneficiario.Nome, beneficiario.Cpf);
+                }
+
+                // Adicionar o parâmetro para os beneficiários
+                SqlParameter beneficiariosParam = new SqlParameter("@BENEFICIARIOS", beneficiariosTable);
+                beneficiariosParam.SqlDbType = SqlDbType.Structured;
+                beneficiariosParam.TypeName = "BeneficiariosType";
+                parametros.Add(beneficiariosParam);
+            }
 
             DataSet ds = base.Consultar("FI_SP_IncClienteV2", parametros);
             long ret = 0;
@@ -155,6 +158,26 @@ namespace FI.AtividadeEntrevista.DAL
             parametros.Add(new System.Data.SqlClient.SqlParameter("ID", cliente.Id));
             parametros.Add(new System.Data.SqlClient.SqlParameter("CPF", cliente.Cpf));
 
+            if (cliente.Beneficiarios != null)
+            {
+                // Criar a tabela de beneficiários
+                DataTable beneficiariosTable = new DataTable();
+                beneficiariosTable.Columns.Add("Nome", typeof(string));
+                beneficiariosTable.Columns.Add("CPF", typeof(string));
+
+                // Preencher a tabela de beneficiários com os dados dos beneficiários do cliente
+                foreach (var beneficiario in cliente.Beneficiarios)
+                {
+                    beneficiariosTable.Rows.Add(beneficiario.Nome, beneficiario.Cpf);
+                }
+
+                // Adicionar o parâmetro para os beneficiários
+                SqlParameter beneficiariosParam = new SqlParameter("@BENEFICIARIOS", beneficiariosTable);
+                beneficiariosParam.SqlDbType = SqlDbType.Structured;
+                beneficiariosParam.TypeName = "BeneficiariosType";
+                parametros.Add(beneficiariosParam);
+            }
+
             base.Executar("FI_SP_AltCliente", parametros);
         }
 
@@ -197,9 +220,11 @@ namespace FI.AtividadeEntrevista.DAL
                         cliente.Telefone = row.Field<string>("Telefone");
                         cliente.Cpf = row.Field<string>("Cpf");
                         cliente.Beneficiarios = new List<Beneficiarios>();
+
+                        lista.Add(cliente);
                     }
 
-                    if (!row.IsNull("BeneficiarioId"))
+                    if (row != null && row.Table.Columns.Contains("BeneficiarioId") && !row.IsNull("BeneficiarioId"))
                     {
                         var beneficiario = new Beneficiarios
                         {
@@ -209,8 +234,8 @@ namespace FI.AtividadeEntrevista.DAL
                             IdCliente = row.Field<long>("Id")
                         };
                         cliente.Beneficiarios.Add(beneficiario);
-                    }
-                    lista.Add(cliente);
+                    }                    
+                        
                 }
             }
 

@@ -73,7 +73,7 @@ namespace WebAtividadeEntrevista.Controllers
                     Sobrenome = model.Sobrenome,
                     Telefone = model.Telefone,
                     Cpf = cpf,
-                    Beneficiarios = model.Beneficiarios
+                    Beneficiarios = model.Beneficiarios != null && model.Beneficiarios.Any() ? model.Beneficiarios.Select(x => new Beneficiarios() { Cpf = x.Cpf, Nome = x.Nome}).ToList() : new List<Beneficiarios>()
                 });
 
            
@@ -136,6 +136,24 @@ namespace WebAtividadeEntrevista.Controllers
                     }
                 }
 
+                var listBeneficiarios = new List<Beneficiarios>();
+
+                if (model.Beneficiarios.Any()) 
+                {                    
+                    foreach (var item in model.Beneficiarios)
+                    {
+                        //Novos Beneficiarios
+                        if(item.Id == null && item.Cpf != null) 
+                        {
+                            listBeneficiarios.Add(new Beneficiarios
+                            {
+                                Cpf = item.Cpf,
+                                Nome = item.Nome
+                            });
+                        }
+                    }
+                }
+
                 bo.Alterar(new Cliente()
                 {
                     Id = model.Id,
@@ -148,7 +166,8 @@ namespace WebAtividadeEntrevista.Controllers
                     Nome = model.Nome,
                     Sobrenome = model.Sobrenome,
                     Telefone = model.Telefone,
-                    Cpf= cpf
+                    Cpf = cpf,
+                    Beneficiarios = listBeneficiarios.Any() ? listBeneficiarios : null
                 });
                                
                 return Json("Cadastro alterado com sucesso.");
@@ -177,7 +196,8 @@ namespace WebAtividadeEntrevista.Controllers
                     Nome = cliente.Nome,
                     Sobrenome = cliente.Sobrenome,
                     Telefone = cliente.Telefone,
-                    Cpf = Convert.ToUInt64(cliente.Cpf).ToString(@"000\.000\.000\-00")
+                    Cpf = Convert.ToUInt64(cliente.Cpf).ToString(@"000\.000\.000\-00"),
+                    Beneficiarios = cliente.Beneficiarios.Select(x => new BeneficiarioModel() { Id = x.Id, Cpf = x.Cpf, Nome = x.Nome }).ToList()
                 };            
             }
 
